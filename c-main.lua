@@ -1,7 +1,3 @@
-UNCore = nil
-
-TriggerEvent("UNCore:GetObject", function(obj) UNCore = obj end)
-
 local ped = PlayerPedId()
 local count = 0
 local injail = false
@@ -52,7 +48,6 @@ local function SetPedInJail()
 	SetEntityInvincible(GetPlayerPed(-1), true)
 	local newCoords = {x = jailCoords.x , y = jailCoords.y , z = jailCoords.z}
 	SetEntityCoords(GetPlayerPed(-1), newCoords.x, newCoords.y, newCoords.z, 0, 0, 0, 0)
-    print(count)
 end
 
 local function ExitJail()
