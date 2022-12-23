@@ -1,8 +1,7 @@
-UNCore = nil
-TriggerEvent('UNCore:GetObject', function(obj) UNCore = obj end)
+local QBCore = exports["qb-core"]:GetCoreObject()
 local MaxTime = Config.Time.time * 60
 
-UNCore.Commands.Add(Config.Command.command, "Puts a player in admin jail", {{name = "id", help = "player id"}, {name = "time", help = "min"}}, false, function(source, args)
+QBCore.Commands.Add(Config.Command.command, "Puts a player in admin jail", {{name = "id", help = "player id"}, {name = "time", help = "min"}}, false, function(source, args)
     if not args[1] or not args[2] then
         TriggerClientEvent("eilay:notify", source, "~r~Error :~w~\n the right command is /adminjail player id and then amount of time", 3000)
         else
