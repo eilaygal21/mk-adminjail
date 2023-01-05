@@ -1,3 +1,5 @@
+--Enty carefull here, all the code runs on client side, move all the important part to the server like the client position.
+
 local ped = PlayerPedId()
 local count = 0
 local injail = false
@@ -34,57 +36,48 @@ local function DrawText3D(x,y,z, text, r,g,b)
     end
 end
 local function IsPedOutOfJail(currentPos)
-	local distanceFromJail = GetDistanceBetweenCoords(jailCoords.x, jailCoords.y, jailCoords.z, currentPos.x, currentPos.y, currentPos.z, true)
-	if distanceFromJail > jailRadius then
-        return true
-        
-	else
-        return false
-        
-	end
+    local distanceFromJail = #(jailCoords - currentPos)
+	return distanceFromJail > jailRadius or false
 end
 
 local function SetPedInJail()
-	SetEntityInvincible(GetPlayerPed(-1), true)
+	SetEntityInvincible(ped, true)
 	local newCoords = {x = jailCoords.x , y = jailCoords.y , z = jailCoords.z}
-	SetEntityCoords(GetPlayerPed(-1), newCoords.x, newCoords.y, newCoords.z, 0, 0, 0, 0)
+	SetEntityCoords(ped, newCoords.x, newCoords.y, newCoords.z, 0, 0, 0, 0)
 end
 
 local function ExitJail()
 	count = 0
 	injail = false
-
-
-	local distanceFromJail = GetDistanceBetweenCoords(jailCoords.x, jailCoords.y, jailCoords.z, initialCoords.x, initialCoords.y, initialCoords.z, true)
+	local distanceFromJail = #(jailCoords - initialCoords)
 	if distanceFromJail < 50.0 then
 		initialCoords = stuckCoords
 	end
 
-	SetEntityCoords(GetPlayerPed(-1), initialCoords.x, initialCoords.y, initialCoords.z, 0, 0, 0, 0)
-	SetEntityInvincible(GetPlayerPed(-1), false)
+	SetEntityCoords(ped, initialCoords.x, initialCoords.y, initialCoords.z, 0, 0, 0, 0)
+	SetEntityInvincible(ped, false)
 end
 
 --System
 
-Citizen.CreateThread(
+CreateThread(
     function()
         while true do
+            local currentPos = GetEntityCoords(ped)
             if injail then
-                local currentPos = GetEntityCoords(GetPlayerPed(-1))
     
                 if IsPedOutOfJail(currentPos) then
                     SetPedInJail()
                 end
                 
-                Citizen.Wait(0)
+                Wait(0)
                 DrawText3D(1651.0552, 2569.8662, 45.564853, "You're now in admin jail ,Time Left: " .. count .. "", 255,255,255)
             else
-                local currentPos = GetEntityCoords(GetPlayerPed(-1))
                 if not IsPedOutOfJail(currentPos) then
                     TriggerEvent('eilay:adminjail', MaxCount)
             end
 
-            Citizen.Wait(200)
+            Wait(200)
            
         end
         
@@ -93,17 +86,15 @@ Citizen.CreateThread(
 end)
 
 local MyCount
-RegisterNetEvent('eilay:adminjail')
-AddEventHandler('eilay:adminjail', function(timeInJail)
+RegisterNetEvent('eilay:adminjail', function(timeInJail)
     count = timeInJail
-
     injail = true
-    initialCoords = GetEntityCoords(GetPlayerPed(-1))
+    initialCoords = GetEntityCoords(ped)
     SetPedInJail()
-    Citizen.CreateThread(function()
+    CreateThread(function()
         while injail do
             count = count - 1
-            Citizen.Wait(1000)
+            Wait(1000)
             if count == 0 then
                 ExitJail()
             end
@@ -111,13 +102,12 @@ AddEventHandler('eilay:adminjail', function(timeInJail)
     end)
 end)
 
-RegisterNetEvent("eilay:unadminjail")
-AddEventHandler("eilay:unadminjail", function()
+RegisterNetEvent("eilay:unadminjail", function()
     count = 0
     injail = false
+    -- you need to check if the player is in jail to prevent exploits
     ExitJail()
 end)
-RegisterNetEvent("eilay:notify")
-AddEventHandler("eilay:notify", function(message, duration)
+RegisterNetEvent("eilay:notify", function(message, duration)
 	newNotif(message, duration)
 end)
